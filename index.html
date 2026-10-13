@@ -243,9 +243,15 @@ ws.onmessage = (event) => {
 
     if (!uid) return;
 
+    // 🔥 FILTRARE CORECTĂ — DOAR USERII ACTIVI (status = 1)
     if (packet.event === "roomUserSeq") {
         const users = packet.data?.users || [];
-        const activeUIDs = new Set(users.map(u => u.secUid || u.userId || u.uniqueId));
+
+        const activeUIDs = new Set(
+            users
+                .filter(u => u.status === 1)
+                .map(u => u.secUid || u.userId || u.uniqueId)
+        );
 
         objects = objects.filter(o => activeUIDs.has(o.uid));
 
@@ -253,6 +259,7 @@ ws.onmessage = (event) => {
         for (const uid of activeUIDs) floatingUsers.add(uid);
 
         for (const u of users) {
+            if (u.status !== 1) continue;
             const uid = u.secUid || u.userId || u.uniqueId;
             const url = getProfileUrl(u);
             spawnFloatingAvatar(url, uid);
